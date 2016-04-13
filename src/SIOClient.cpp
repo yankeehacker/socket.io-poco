@@ -25,7 +25,7 @@ SIOClient::~SIOClient() {
 	SIOClientRegistry::instance()->removeClient(_uri);
 }
 
-SIOClient* SIOClient::connect(std::string uri) {
+SIOClient* SIOClient::connect(std::string uri, std::map<std::string, std::string> queryArgs) {
 
 	//check if connection to endpoint exists 
 	URI tmp_uri(uri);
@@ -45,7 +45,7 @@ SIOClient* SIOClient::connect(std::string uri) {
 
 		if(!impl)
 		{
-			impl = SIOClientImpl::connect(tmp_uri);
+			impl = SIOClientImpl::connect(tmp_uri, queryArgs);
 
 			if (!impl) return NULL; //connect failed
 

@@ -33,14 +33,14 @@ using Poco::ThreadTarget;
 class SIOClientImpl: public Poco::Runnable
 {
 public:
-	bool handshake();
+	bool handshake(std::map<std::string, std::string> queryArgs);
 	bool openSocket();
-	bool init();
+	bool init(std::map<std::string, std::string> queryArgs);
 
 	void release();
 	void addref();
 
-	static SIOClientImpl* connect(Poco::URI uri);
+	static SIOClientImpl* connect(Poco::URI uri, std::map<std::string, std::string> queryArgs);
 	void disconnect(std::string endpoint);
 	void connectToEndpoint(std::string endpoint);
 	void monitor();
@@ -58,6 +58,7 @@ private:
 
 	SIOClientImpl();
 	SIOClientImpl(Poco::URI uri);
+	std::string generateHandshakeUri(std::map<std::string, std::string> queryArgs);
 	~SIOClientImpl(void);
 	
 	std::string _sid;

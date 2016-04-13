@@ -27,7 +27,7 @@ public:
 
 	SIOClient(std::string uri, std::string endpoint, SIOClientImpl *impl);
 
-	static SIOClient* connect(std::string uri);
+	static SIOClient* connect(std::string uri, std::map<std::string, std::string> queryArgs);
 	void disconnect();
 	void send(std::string s);
 	void emit(std::string eventname, std::string args);

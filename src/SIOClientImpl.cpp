@@ -88,10 +88,10 @@ SIOClientImpl::~SIOClientImpl(void)
 	SIOClientRegistry::instance()->removeSocket(uri);
 }
 
-bool SIOClientImpl::init() {
+bool SIOClientImpl::init(std::map<std::string, std::string> queryArgs) {
 	_logger = &(Logger::get("SIOClientLog"));
 
-	if(handshake()) 
+	if(handshake(queryArgs)) 
 	{
 		if(openSocket()) return true;
 	}
@@ -100,7 +100,7 @@ bool SIOClientImpl::init() {
 
 }
 
-bool SIOClientImpl::handshake()
+bool SIOClientImpl::handshake(std::map<std::string, std::string> queryArgs)
 {
 	UInt16 aport = _port;
 	if(_uri.getScheme() == "https")
@@ -111,7 +111,10 @@ bool SIOClientImpl::handshake()
 		_session = new HTTPClientSession(_host, aport);
 	}
 	_session->setKeepAlive(false);
-	HTTPRequest req(HTTPRequest::HTTP_GET,"/socket.io/1/?EIO=2&transport=polling",HTTPMessage::HTTP_1_1);
+
+	std::string reqString = generateHandshakeUri(queryArgs);
+
+	HTTPRequest req(HTTPRequest::HTTP_GET,reqString,HTTPMessage::HTTP_1_1);
 	req.set("Accept","*/*");
 	req.setContentType("text/plain");
 	req.setHost(_host);
@@ -245,11 +248,11 @@ bool SIOClientImpl::openSocket()
 }
 
 
-SIOClientImpl* SIOClientImpl::connect(URI uri)
+SIOClientImpl* SIOClientImpl::connect(URI uri, std::map<std::string, std::string> queryArgs)
 {
 	SIOClientImpl *s = new SIOClientImpl(uri);
 
-	if(s && s->init()) {
+	if(s && s->init(queryArgs)) {
 		return s;
 	}
 
@@ -611,6 +614,28 @@ bool SIOClientImpl::receive()
 
 	return true;
 
+}
+
+std::string SIOClientImpl::generateHandshakeUri(std::map<std::string, std::string> queryArgs)
+{
+	// Initialize request string
+	std::string reqString = "/socket.io/1/?";
+	typedef std::map<std::string, std::string>::iterator it_type;
+	int argCount = 0;
+	// Add the query args
+	for(it_type queryPair = queryArgs.begin(); queryPair != queryArgs.end(); queryPair++)
+	{
+		std::string appendString = queryPair->first + "=" + queryPair->second;
+		// Check if we need to add the ampersand (not on the last one)
+		if(argCount < (queryArgs.size() - 1))
+		{
+			appendString += "&";
+		}
+		reqString.append(appendString);
+		argCount++;
+	}
+
+	return reqString;
 }
 
 void SIOClientImpl::addref() {
