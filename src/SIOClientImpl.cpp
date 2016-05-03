@@ -468,9 +468,6 @@ bool SIOClientImpl::receive()
 						Object::Ptr msg = result.extract<Object::Ptr>();
 						packetOut->setEvent(msg->get("name"));
 						packetOut->addData(msg->getArray("args"));
-
-						std::cout << uri << std::endl;
-
 						c->getNCenter()->postNotification(new SIOEvent(c,packetOut));
 					}
 				}break;
