@@ -404,7 +404,6 @@ bool SIOClientImpl::receive()
 			std::string endpoint = st[2];
 
 			std::stringstream ss;
-			// uri += endpoint;
 			_logger->information("URI:%s",uri);
 
 			c = SIOClientRegistry::instance()->getClient(uri);
