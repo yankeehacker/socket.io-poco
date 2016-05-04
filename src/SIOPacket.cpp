@@ -78,9 +78,7 @@ std::string SocketIOPacket::toString()
 		}
 		encoded << ackpId << this->stringify();
 	}
-
-	std::cout << "Encoded String: " << encoded.str() << std::endl;
-
+	
 	return encoded.str();
 }
 int SocketIOPacket::typeAsNumber()
