@@ -78,6 +78,7 @@ std::string SocketIOPacket::toString()
 		}
 		encoded << ackpId << this->stringify();
 	}
+	
 	return encoded.str();
 }
 int SocketIOPacket::typeAsNumber()
@@ -93,6 +94,11 @@ int SocketIOPacket::typeAsNumber()
 std::string SocketIOPacket::typeForIndex(int index)
 {
 	return _types.at(index);
+}
+
+void SocketIOPacket::addJSONData(Poco::JSON::Object::Ptr json_data)
+{
+	this->_args.add(json_data);
 }
 
 void SocketIOPacket::addData(std::string data)

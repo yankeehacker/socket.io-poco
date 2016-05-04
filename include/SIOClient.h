@@ -31,6 +31,7 @@ public:
 	void disconnect();
 	void send(std::string s);
 	void emit(std::string eventname, std::string args);
+	void emit(std::string eventname, Poco::JSON::Object::Ptr json_data);
 	std::string getUri();
 	Poco::NotificationCenter* getNCenter();
 

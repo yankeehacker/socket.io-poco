@@ -346,6 +346,17 @@ void SIOClientImpl::send(std::string endpoint, std::string s)
 	}
 }
 
+void SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data)
+{
+	_logger->information("Emitting event \"%s\"",eventname);
+	SocketIOPacket *packet = SocketIOPacket::createPacketWithType("event",_version);
+	packet->setEndpoint(endpoint);
+	packet->setEvent(eventname);
+	packet->addJSONData(json_data);
+	this->send(packet);
+}
+
+
 void SIOClientImpl::emit(std::string endpoint, std::string eventname, std::string args)
 {
 	_logger->information("Emitting event \"%s\"",eventname);

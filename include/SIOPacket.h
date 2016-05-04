@@ -34,6 +34,7 @@ public:
 	std::string getEvent(){return _name;};
 
 	void addData(std::string data);
+	void addJSONData(Poco::JSON::Object::Ptr json_data);
 	void addData(Poco::JSON::Array::Ptr data);
 	Poco::JSON::Array getDatas(){return _args;};
 	virtual std::string stringify();
