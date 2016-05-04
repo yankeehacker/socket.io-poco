@@ -390,7 +390,7 @@ bool SIOClientImpl::receive()
 	}
 	SIOClient *c;
 	std::stringstream suri;
-	suri << _uri.getHost() << ":" << _uri.getPort();
+	suri << _uri.getHost() << ":" << _uri.getPort() << _uri.getPath();
 	std::string uri = suri.str();
 
 	switch(_version)
@@ -404,7 +404,6 @@ bool SIOClientImpl::receive()
 			std::string endpoint = st[2];
 
 			std::stringstream ss;
-			uri += endpoint;
 			_logger->information("URI:%s",uri);
 
 			c = SIOClientRegistry::instance()->getClient(uri);
