@@ -1,6 +1,7 @@
 #include "SIOClient.h"
 #include "SIOClientRegistry.h"
 
+#include "Poco/Foundation.h"
 #include "Poco/URI.h"
 
 using Poco::URI;
@@ -100,4 +101,9 @@ void SIOClient::send(std::string s)
 void SIOClient::emit(std::string eventname, std::string args)
 {
 	_socket->emit(_endpoint, eventname, args);
+}
+
+void SIOClient::emit(std::string eventname, Poco::JSON::Object::Ptr json_data)
+{
+	_socket->emit(_endpoint, eventname, json_data);
 }
