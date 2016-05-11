@@ -1,6 +1,8 @@
 #ifndef SIO_Client_INCLUDED
 #define SIO_Client_INCLUDED
 
+#include <mutex>
+
 #include "SIOClientImpl.h"
 
 #include "Poco/JSON/Array.h"
@@ -20,7 +22,9 @@ private:
 	Poco::NotificationCenter* _nCenter;
 
 	SIOEventRegistry *_registry;
-	SIONotificationHandler *_sioHandler; 
+	SIONotificationHandler *_sioHandler;
+
+	std::mutex _emit_mtx; 
 
 public:
 
