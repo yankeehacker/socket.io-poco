@@ -161,8 +161,7 @@ std::string SocketIOPacket::generateSnappyBufferString(std::string input) {
 	// Go through the compressed snappy string and generate the ascii buffer
 	for(int i = 0; i < argstr.size(); i++) {
 		int packed_ascii = (int)argstr.at(i);
-		packedstr.append(std::to_string(packed_ascii));
-		packedstr.append(",");
+		packedstr.append(std::to_string(packed_ascii) + ",");
 	}
 	packedstr.at(packedstr.size() - 1) = ']';
 
