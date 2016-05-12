@@ -38,6 +38,7 @@ public:
 	void addData(Poco::JSON::Array::Ptr data);
 	Poco::JSON::Array getDatas(){return _args;};
 	virtual std::string stringify();
+	std::string generateSnappyBufferString(std::string input);
 
 	static SocketIOPacket * createPacketWithType(std::string type, SocketIOPacket::SocketIOVersion version);
 	static SocketIOPacket * createPacketWithTypeIndex(int type, SocketIOPacket::SocketIOVersion version);

@@ -124,7 +124,8 @@ std::string SocketIOPacket::stringify()
 	}
 	else
 	{
-		if(_name != "audit/events") {
+		// check if the event being sent is of type audit/event
+		if(_name != "audit/events") { 
 			Poco::JSON::Object obj;
 			obj.set("name",_name);
 			// do not require arguments
@@ -135,34 +136,42 @@ std::string SocketIOPacket::stringify()
 			std::stringstream ss;
 			obj.stringify(ss);
 			outS = ss.str();
-		} else {
+		} else { // If so, then do it via snappy buffer strings
 			std::stringstream ss;
 			if(_args.size() != 0) {
 				_args.stringify(ss);
 			}
-			std::string argstr;
-			snappy::Compress(ss.str().data(), ss.str().size(), &argstr);
-
-			std::string packedstr = "[";
-			for(int i = 0; i < argstr.size(); i++) {
-				int packed_ascii = (int)(argstr.data()[i]);
-				packedstr.append(std::to_string(packed_ascii));
-				packedstr.append(",");
-			}
-			packedstr.pop_back();
-			packedstr.append("]");
-
-			std::string outstr = "";
-			outstr.append("{\"name\":\"" + _name + "\",");
-			outstr.append("\"args\":[" + packedstr + "]}");
-
-			outS = outstr;
+			outS = generateSnappyBufferString(ss.str());
 		}
-
-		std::cout << outS << std::endl;
-
 	}
 	return outS;
+}
+
+// Converts a string input in a snappy-compressed node-style ascii buffer string that 
+// the node backend can understand. All the formatting of the string is done manually,
+// so that's fun.
+std::string SocketIOPacket::generateSnappyBufferString(std::string input) {
+	// Allocate space for the snappy compressed string
+	std::string argstr;
+	// Compress it
+	snappy::Compress(input.data(), input.size(), &argstr);
+
+	// Initialize the ascii buffer string
+	std::string packedstr = "[";
+	// Go through the compressed snappy string and generate the ascii buffer
+	for(int i = 0; i < argstr.size(); i++) {
+		int packed_ascii = (int)argstr.at(i);
+		packedstr.append(std::to_string(packed_ascii));
+		packedstr.append(",");
+	}
+	packedstr.at(packedstr.size() - 1) = ']';
+
+	// Format things correctly as {"name":"foo","args":[[34,123,...]]}
+	std::string outstr = "";
+	outstr.append("{\"name\":\"" + _name + "\",");
+	outstr.append("\"args\":[" + packedstr + "]}");
+
+	return outstr;
 }
 
 SocketIOPacketV10x::SocketIOPacketV10x()
