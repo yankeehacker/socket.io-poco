@@ -111,3 +111,10 @@ void SIOClient::emit(std::string eventname, Poco::JSON::Object::Ptr json_data)
 	_socket->emit(_endpoint, eventname, json_data);
 	_emit_mtx.unlock();
 }
+
+void SIOClient::emit(std::string eventname, Poco::JSON::Array::Ptr json_data)
+{
+	_emit_mtx.lock();
+	_socket->emit(_endpoint, eventname, json_data);
+	_emit_mtx.unlock();
+}

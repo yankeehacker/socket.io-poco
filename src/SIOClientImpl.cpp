@@ -19,6 +19,8 @@
 #include "Poco/RunnableAdapter.h"
 #include "Poco/URI.h"
 
+#include "snappy.h"
+
 #include "SIONotifications.h"
 #include "SIOClientRegistry.h"
 #include "SIOClient.h"
@@ -346,6 +348,16 @@ void SIOClientImpl::send(std::string endpoint, std::string s)
 	}
 }
 
+void SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Array::Ptr json_data)
+{
+	_logger->information("Emitting event \"%s\"",eventname);
+	SocketIOPacket *packet = SocketIOPacket::createPacketWithType("event",_version);
+	packet->setEndpoint(endpoint);
+	packet->setEvent(eventname);
+	packet->addData(json_data);
+	this->send(packet);
+}
+
 void SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data)
 {
 	_logger->information("Emitting event \"%s\"",eventname);
@@ -370,6 +382,9 @@ void SIOClientImpl::emit(std::string endpoint, std::string eventname, std::strin
 void SIOClientImpl::send(SocketIOPacket *packet)
 {
 	std::string req = packet->toString();
+
+	std::cout << "Request: " << req << std::endl;
+
 	if(_connected)
 	{
 		_logger->information("-->SEND:%s",req);

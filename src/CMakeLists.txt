@@ -16,11 +16,19 @@ set(THIRD_PARTY_LIB "${THIRD_PARTY}/lib")
 
 file(GLOB SIOPOCO_SOURCES *.cpp)
 
+set(SNAPPY_SOURCES
+    ../../snappy/snappy-stubs-internal.cc
+    ../../snappy/snappy-sinksource.cc
+    ../../snappy/snappy-c.cc
+    ../../snappy/snappy.cc
+)
+
 include_directories("${MAINFOLDER}/../include" /usr/local/include "${THIRD_PARTY_INCLUDE}")
+include_directories("${MAINFOLDER}/../../snappy")
 
 link_directories(/usr/local/lib "${THIRD_PARTY_LIB}")
-add_library(socketiopoco_static STATIC ${SIOPOCO_SOURCES})
-add_library(socketiopoco_shared SHARED ${SIOPOCO_SOURCES})
+add_library(socketiopoco_static STATIC ${SIOPOCO_SOURCES} ${SNAPPY_SOURCES})
+add_library(socketiopoco_shared SHARED ${SIOPOCO_SOURCES} ${SNAPPY_SOURCES})
 target_link_libraries(socketiopoco_static PocoFoundation PocoJSON PocoNet PocoNetSSL)
 target_link_libraries(socketiopoco_shared PocoFoundation PocoJSON PocoNet PocoNetSSL)
 

@@ -3,6 +3,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "snappy.h"
+
 SocketIOPacket::SocketIOPacket()
 {
 	_separator = ":";
@@ -76,6 +78,7 @@ std::string SocketIOPacket::toString()
 		{
 			ackpId += pIdL+"+";
 		}
+
 		encoded << ackpId << this->stringify();
 	}
 	
@@ -121,16 +124,43 @@ std::string SocketIOPacket::stringify()
 	}
 	else
 	{
-		Poco::JSON::Object obj;
-		obj.set("name",_name);
-		// do not require arguments
-		if (_args.size() != 0)
-		{
-			obj.set("args",_args);
+		if(_name != "audit/events") {
+			Poco::JSON::Object obj;
+			obj.set("name",_name);
+			// do not require arguments
+			if (_args.size() != 0)
+			{
+				obj.set("args",_args);
+			}
+			std::stringstream ss;
+			obj.stringify(ss);
+			outS = ss.str();
+		} else {
+			std::stringstream ss;
+			if(_args.size() != 0) {
+				_args.stringify(ss);
+			}
+			std::string argstr;
+			snappy::Compress(ss.str().data(), ss.str().size(), &argstr);
+
+			std::string packedstr = "[";
+			for(int i = 0; i < argstr.size(); i++) {
+				int packed_ascii = (int)(argstr.data()[i]);
+				packedstr.append(std::to_string(packed_ascii));
+				packedstr.append(",");
+			}
+			packedstr.pop_back();
+			packedstr.append("]");
+
+			std::string outstr = "";
+			outstr.append("{\"name\":\"" + _name + "\",");
+			outstr.append("\"args\":[" + packedstr + "]}");
+
+			outS = outstr;
 		}
-		std::stringstream ss;
-		obj.stringify(ss);
-		outS = ss.str();
+
+		std::cout << outS << std::endl;
+
 	}
 	return outS;
 }
