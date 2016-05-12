@@ -382,9 +382,6 @@ void SIOClientImpl::emit(std::string endpoint, std::string eventname, std::strin
 void SIOClientImpl::send(SocketIOPacket *packet)
 {
 	std::string req = packet->toString();
-
-	std::cout << "Request: " << req << std::endl;
-
 	if(_connected)
 	{
 		_logger->information("-->SEND:%s",req);
