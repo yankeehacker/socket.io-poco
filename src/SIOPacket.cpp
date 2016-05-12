@@ -152,25 +152,25 @@ std::string SocketIOPacket::stringify()
 // so that's fun.
 std::string SocketIOPacket::generateSnappyBufferString(std::string input) {
 	// Allocate space for the snappy compressed string
-	std::string argstr;
+	std::string arg_str;
 	// Compress it
-	snappy::Compress(input.data(), input.size(), &argstr);
+	snappy::Compress(input.data(), input.size(), &arg_str);
 
 	// Initialize the ascii buffer string
-	std::string packedstr = "[";
+	std::string packed_str = "[";
 	// Go through the compressed snappy string and generate the ascii buffer
-	for(int i = 0; i < argstr.size(); i++) {
-		int packed_ascii = (int)argstr.at(i);
-		packedstr += (std::to_string(packed_ascii) + ",");
+	for(int i = 0; i < arg_str.size(); i++) {
+		int packed_ascii = (int)arg_str.at(i);
+		packed_str += (std::to_string(packed_ascii) + ",");
 	}
-	packedstr.at(packedstr.size() - 1) = ']';
+	packed_str.at(packed_str.size() - 1) = ']';
 
 	// Format things correctly as {"name":"foo","args":[[34,123,...]]}
-	std::string outstr = "";
-	outstr.append("{\"name\":\"" + _name + "\",");
-	outstr.append("\"args\":[" + packedstr + "]}");
+	std::string out_str = "";
+	out_str.append("{\"name\":\"" + _name + "\",");
+	out_str.append("\"args\":[" + packed_str + "]}");
 
-	return outstr;
+	return out_str;
 }
 
 SocketIOPacketV10x::SocketIOPacketV10x()
