@@ -3,6 +3,8 @@
 #include <sstream>
 #include <algorithm>
 
+#include "snappy.h"
+
 SocketIOPacket::SocketIOPacket()
 {
 	_separator = ":";
@@ -76,6 +78,7 @@ std::string SocketIOPacket::toString()
 		{
 			ackpId += pIdL+"+";
 		}
+
 		encoded << ackpId << this->stringify();
 	}
 	
@@ -121,18 +124,53 @@ std::string SocketIOPacket::stringify()
 	}
 	else
 	{
-		Poco::JSON::Object obj;
-		obj.set("name",_name);
-		// do not require arguments
-		if (_args.size() != 0)
-		{
-			obj.set("args",_args);
+		// check if the event being sent is of type audit/event
+		if(_name != "audit/events") { 
+			Poco::JSON::Object obj;
+			obj.set("name",_name);
+			// do not require arguments
+			if (_args.size() != 0)
+			{
+				obj.set("args",_args);
+			}
+			std::stringstream ss;
+			obj.stringify(ss);
+			outS = ss.str();
+		} else { // If so, then do it via snappy buffer strings
+			std::stringstream ss;
+			if(_args.size() != 0) {
+				_args.stringify(ss);
+			}
+			outS = generateSnappyBufferString(ss.str());
 		}
-		std::stringstream ss;
-		obj.stringify(ss);
-		outS = ss.str();
 	}
 	return outS;
+}
+
+// Converts a string input in a snappy-compressed node-style ascii buffer string that 
+// the node backend can understand. All the formatting of the string is done manually,
+// so that's fun.
+std::string SocketIOPacket::generateSnappyBufferString(std::string input) {
+	// Allocate space for the snappy compressed string
+	std::string arg_str;
+	// Compress it
+	snappy::Compress(input.data(), input.size(), &arg_str);
+
+	// Initialize the ascii buffer string
+	std::string packed_str = "[";
+	// Go through the compressed snappy string and generate the ascii buffer
+	for(int i = 0; i < arg_str.size(); i++) {
+		int packed_ascii = (int)arg_str.at(i);
+		packed_str += (std::to_string(packed_ascii) + ",");
+	}
+	packed_str.at(packed_str.size() - 1) = ']';
+
+	// Format things correctly as {"name":"foo","args":[[34,123,...]]}
+	std::string out_str = "";
+	out_str.append("{\"name\":\"" + _name + "\",");
+	out_str.append("\"args\":[" + packed_str + "]}");
+
+	return out_str;
 }
 
 SocketIOPacketV10x::SocketIOPacketV10x()

@@ -1,3 +1,5 @@
+#include <mutex>
+
 #include "SIOClient.h"
 #include "SIOClientRegistry.h"
 
@@ -7,7 +9,7 @@
 using Poco::URI;
 
 SIOClient::SIOClient(std::string uri, std::string endpoint, SIOClientImpl *impl)
-	: _uri(uri), _endpoint(endpoint), _socket(impl)
+	: _uri(uri), _endpoint(endpoint), _socket(impl), _emit_mtx()
 {
 	_socket->addref();
 
@@ -105,5 +107,14 @@ void SIOClient::emit(std::string eventname, std::string args)
 
 void SIOClient::emit(std::string eventname, Poco::JSON::Object::Ptr json_data)
 {
+	_emit_mtx.lock();
 	_socket->emit(_endpoint, eventname, json_data);
+	_emit_mtx.unlock();
+}
+
+void SIOClient::emit(std::string eventname, Poco::JSON::Array::Ptr json_data)
+{
+	_emit_mtx.lock();
+	_socket->emit(_endpoint, eventname, json_data);
+	_emit_mtx.unlock();
 }
