@@ -125,7 +125,7 @@ std::string SocketIOPacket::stringify()
 	else
 	{
 		// check if the event being sent is of type audit/event
-		if(_name != "audit/events") { 
+		if(_name != "audit/events" && _name != "login/events") { 
 			Poco::JSON::Object obj;
 			obj.set("name",_name);
 			// do not require arguments
