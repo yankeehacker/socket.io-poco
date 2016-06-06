@@ -124,6 +124,7 @@ std::string SocketIOPacket::stringify()
 	}
 	else
 	{
+		// If it's a event route like the following, then use aascii encoding
 		bool event_route = _name == "login/events" || _name == "fim/events" || _name == "hids/events" ||
 			_name == "network/events" || _name == "audit/events";
 		// Check if it's a special event route
@@ -132,6 +133,7 @@ std::string SocketIOPacket::stringify()
 			if(_args.size() != 0) {
 				_args.stringify(ss);
 			}
+			// Generate an ascii byte string to pass to AL
 			outS = generateSnappyBufferString(ss.str());
 		} else {
 			Poco::JSON::Object obj;
