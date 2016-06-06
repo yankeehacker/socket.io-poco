@@ -124,8 +124,16 @@ std::string SocketIOPacket::stringify()
 	}
 	else
 	{
-		// check if the event being sent is of type audit/event
-		if(_name != "audit/events" && _name != "login/events") { 
+		bool event_route = _name == "login/events" || _name == "fim/events" || _name == "hids/events" ||
+			_name == "network/events" || _name == "audit/events";
+		// Check if it's a special event route
+		if(event_route) {
+			std::stringstream ss;
+			if(_args.size() != 0) {
+				_args.stringify(ss);
+			}
+			outS = generateSnappyBufferString(ss.str());
+		} else {
 			Poco::JSON::Object obj;
 			obj.set("name",_name);
 			// do not require arguments
@@ -136,12 +144,6 @@ std::string SocketIOPacket::stringify()
 			std::stringstream ss;
 			obj.stringify(ss);
 			outS = ss.str();
-		} else { // If so, then do it via snappy buffer strings
-			std::stringstream ss;
-			if(_args.size() != 0) {
-				_args.stringify(ss);
-			}
-			outS = generateSnappyBufferString(ss.str());
 		}
 	}
 	return outS;
