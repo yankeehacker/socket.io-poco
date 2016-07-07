@@ -126,7 +126,7 @@ std::string SocketIOPacket::stringify()
 	{
 		// If it's a event route like the following, then use aascii encoding
 		bool event_route = _name == "login/events" || _name == "fim/events" || _name == "hids/events" ||
-			_name == "network/events" || _name == "audit/events";
+			_name == "network/events" || _name == "audit/events" || _name == "winsec/events";
 		// Check if it's a special event route
 		if(event_route) {
 			std::stringstream ss;
