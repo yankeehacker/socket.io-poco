@@ -47,11 +47,11 @@ public:
 	virtual void run();
 	void heartbeat(Poco::Timer& timer);
 	bool receive();
-	void send(std::string endpoint, std::string s);
-	void send(SocketIOPacket *packet);
-	void emit(std::string endpoint, std::string eventname, std::string args);
-	void emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data);
-	void emit(std::string endpoint, std::string eventname, Poco::JSON::Array::Ptr json_data);
+	int send(std::string endpoint, std::string s);
+	int send(SocketIOPacket *packet);
+	int emit(std::string endpoint, std::string eventname, std::string args);
+	int emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data);
+	int emit(std::string endpoint, std::string eventname, Poco::JSON::Array::Ptr json_data);
 
 	std::string getUri();
 
