@@ -331,64 +331,67 @@ void SIOClientImpl::monitor() {
 	} while (_connected);
 }
 
-void SIOClientImpl::send(std::string endpoint, std::string s)
-{
-	switch (_version) {
-		case SocketIOPacket::V09x:
-		{
-			_logger->information("Sending Message");
-			SocketIOPacket *packet = SocketIOPacket::createPacketWithType("message",_version);
-			packet->setEndpoint(endpoint);
-			packet->addData(s);
-			this->send(packet);
-		}	break;
-		case SocketIOPacket::V10x:
-			this->emit(endpoint,"message",s);
-			break;
-	}
+int SIOClientImpl::send(std::string endpoint, std::string s) {
+    int ret;
+    switch (_version) {
+    case SocketIOPacket::V09x:
+        {
+            _logger->information("Sending Message");
+            SocketIOPacket *packet = SocketIOPacket::createPacketWithType("message",_version);
+            packet->setEndpoint(endpoint);
+            packet->addData(s);
+            ret = this->send(packet);
+        }
+        break;
+    case SocketIOPacket::V10x:
+        ret = this->emit(endpoint,"message",s);
+        break;
+    }
+    return ret;
 }
 
-void SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Array::Ptr json_data)
+int SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Array::Ptr json_data)
 {
 	_logger->information("Emitting event \"%s\"",eventname);
 	SocketIOPacket *packet = SocketIOPacket::createPacketWithType("event",_version);
 	packet->setEndpoint(endpoint);
 	packet->setEvent(eventname);
 	packet->addData(json_data);
-	this->send(packet);
+	return this->send(packet);
 }
 
-void SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data)
+int SIOClientImpl::emit(std::string endpoint, std::string eventname, Poco::JSON::Object::Ptr json_data)
 {
 	_logger->information("Emitting event \"%s\"",eventname);
 	SocketIOPacket *packet = SocketIOPacket::createPacketWithType("event",_version);
 	packet->setEndpoint(endpoint);
 	packet->setEvent(eventname);
 	packet->addJSONData(json_data);
-	this->send(packet);
+	return this->send(packet);
 }
 
 
-void SIOClientImpl::emit(std::string endpoint, std::string eventname, std::string args)
+int SIOClientImpl::emit(std::string endpoint, std::string eventname, std::string args)
 {
 	_logger->information("Emitting event \"%s\"",eventname);
 	SocketIOPacket *packet = SocketIOPacket::createPacketWithType("event",_version);
 	packet->setEndpoint(endpoint);
 	packet->setEvent(eventname);
 	packet->addData(args);
-	this->send(packet);
+	return this->send(packet);
 }
 
-void SIOClientImpl::send(SocketIOPacket *packet)
-{
-	std::string req = packet->toString();
-	if(_connected)
-	{
-		_logger->information("-->SEND:%s",req);
-		_ws->sendFrame(req.data(),req.size());
-	}
-	else
-		_logger->warning("Cant send the message (%s) because disconnected",req);
+int SIOClientImpl::send(SocketIOPacket *packet) {
+    int ret = 0;
+    std::string req = packet->toString();
+    if(_connected) {
+        _logger->information("-->SEND:%s",req);
+        ret = _ws->sendFrame(req.data(),req.size());
+    } else {
+        _logger->warning("Cant send the message (%s) because disconnected",
+                         req);
+    }
+    return ret;
 }
 
 bool SIOClientImpl::receive()
@@ -430,7 +433,12 @@ bool SIOClientImpl::receive()
 			_logger->information("URI:%s",uri);
 
 			c = SIOClientRegistry::instance()->getClient(uri);
-
+                        // If you don't have a client, then you can't do 3, 4,
+                        // or 5
+                        if((c == NULL)&&(2 < control)&&(control < 6)) {
+                            break;
+                        }
+                        
 			std::string payload = "";
 			packetOut = SocketIOPacket::createPacketWithTypeIndex(control,_version);
 			packetOut->setEndpoint(endpoint);
