@@ -62,7 +62,8 @@ SIOClientImpl::SIOClientImpl(URI uri) :
 	_refCount(0)
 {
 	_uri = uri;
-	_ws = NULL;	
+	_ws = NULL;
+        _queryArgs.clear();
 
 }
 
@@ -92,7 +93,8 @@ SIOClientImpl::~SIOClientImpl(void)
 
 bool SIOClientImpl::init(std::map<std::string, std::string> queryArgs) {
 	_logger = &(Logger::get("SIOClientLog"));
-
+        _queryArgs = queryArgs;
+        
 	if(handshake(queryArgs)) 
 	{
 		if(openSocket()) return true;
@@ -228,6 +230,8 @@ bool SIOClientImpl::openSocket()
 		return _connected;
 	}
 
+        _ws->setSendTimeout(Poco::Timespan(5,0));
+
 	if(_version == SocketIOPacket::V10x)
 	{
 		std::string s = "5";//That's a ping https://github.com/Automattic/engine.io-parser/blob/1b8e077b2218f4947a69f5ad18be2a512ed54e93/lib/index.js#L21
@@ -278,6 +282,18 @@ void SIOClientImpl::disconnect(std::string endpoint)
 
 	if(_version == SocketIOPacket::V10x)
 		_ws->shutdown();
+}
+
+void SIOClientImpl::reconnect() {
+    // Disconnect
+    _heartbeatTimer->stop();
+    _ws->close();
+    // Connect
+    if((handshake(_queryArgs)) && (openSocket())) {
+            connectToEndpoint(_uri.getPath());
+    } else {
+        Poco::Thread::sleep(100);
+    }
 }
 
 void SIOClientImpl::connectToEndpoint(std::string endpoint)
@@ -386,7 +402,11 @@ int SIOClientImpl::send(SocketIOPacket *packet) {
     std::string req = packet->toString();
     if(_connected) {
         _logger->information("-->SEND:%s",req);
-        ret = _ws->sendFrame(req.data(),req.size());
+        try {
+            ret = _ws->sendFrame(req.data(),req.size());
+        } catch (Poco::Exception& e) {
+            reconnect();
+        }
     } else {
         _logger->warning("Cant send the message (%s) because disconnected",
                          req);

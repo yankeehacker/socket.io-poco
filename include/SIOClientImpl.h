@@ -71,6 +71,7 @@ private:
 	Poco::URI _uri;
 	bool _connected;
 	SocketIOPacket::SocketIOVersion _version;
+        std::map<std::string, std::string>  _queryArgs;
 
 	HTTPClientSession *_session;
 	WebSocket *_ws;
