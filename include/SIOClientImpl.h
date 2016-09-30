@@ -43,6 +43,7 @@ public:
 	static SIOClientImpl* connect(Poco::URI uri, std::map<std::string, std::string> queryArgs);
 	void disconnect(std::string endpoint);
 	void connectToEndpoint(std::string endpoint);
+	void disconnect(std::string endpoint);
 	void monitor();
 	virtual void run();
 	void heartbeat(Poco::Timer& timer);
