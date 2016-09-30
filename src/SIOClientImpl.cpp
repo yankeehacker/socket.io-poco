@@ -59,12 +59,10 @@ SIOClientImpl::SIOClientImpl(URI uri) :
 	_buffer_size(0),
 	_port(uri.getPort()),
 	_host(uri.getHost()),
-	_refCount(0)
+	_refCount(0),
+	_uri(uri),
+	_ws(NULL)
 {
-	_uri = uri;
-	_ws = NULL;
-        _queryArgs.clear();
-
 }
 
 SIOClientImpl::~SIOClientImpl(void)
